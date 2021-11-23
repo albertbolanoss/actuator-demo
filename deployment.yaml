@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: actuator-demo
+  labels:
+    app: actuator-demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: actuator-demo
+  template:
+    metadata:
+      labels:
+        app: actuator-demo
+    spec:
+      containers:
+      - name: actuator-demo
+        image: luigisamurai/actuator-demo:latest
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          exec:
+            command:
+              - sh
+              - '-c'
+              - >-
+                curl -s -o /dev/null -I -w %{http_code}
+                http://localhost:8080/actuator/health/live | grep '[2-3][0-9][0-9]'
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
